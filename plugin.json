@@ -1,10 +1,11 @@
 {
-	"id": "nodebb-plugin-quickstart",
-	"url": "https://github.com/NodeBB/nodebb-plugin-quickstart",
+	"id": "nodebb-plugin-registration-notification",
+	"url": "https://github.com/NodeBB/nodebb-plugin-registration-notification",
 	"library": "./library.js",
 	"hooks": [
 		{ "hook": "static:app.load", "method": "init" },
-		{ "hook": "filter:admin.header.build", "method": "addAdminNavigation" }
+		{ "hook": "filter:admin.header.build", "method": "addAdminNavigation" },
+		{ "hook": "filter:register.complete", "method": "onRegister" }
 	],
 	"staticDirs": {
 		"static": "./static"
@@ -13,7 +14,6 @@
 		"static/style.less"
 	],
 	"scripts": [
-		"static/lib/main.js",
 		"static/lib/admin.js"
 	],
 	"templates": "static/templates"

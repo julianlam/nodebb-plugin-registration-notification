@@ -1,11 +1,11 @@
 {
-  "name": "nodebb-plugin-quickstart",
+  "name": "nodebb-plugin-registration-notification",
   "version": "0.0.0",
-  "description": "",
+  "description": "Automatically notifies administrators when a new user has registered on their forum",
   "main": "library.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/julianlam/nodebb-plugin-quickstart"
+    "url": "https://github.com/julianlam/nodebb-plugin-registration-notification"
   },
   "keywords": [
     "nodebb",
@@ -17,7 +17,10 @@
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/julianlam/nodebb-plugin-quickstart/issues"
+    "url": "https://github.com/julianlam/nodebb-plugin-registration-notification/issues"
   },
-  "readmeFilename": "README.md"
+  "readmeFilename": "README.md",
+  "nbbpm": {
+    "compatibility": "^0.7.0"
+  }
 }
