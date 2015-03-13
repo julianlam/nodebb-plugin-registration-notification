@@ -5,9 +5,11 @@ var controllers = require('./lib/controllers'),
 	groups = require.main.require('./src/groups'),
 	emailer = require.main.require('./src/emailer'),
 	meta = require.main.require('./src/meta'),
+	notifications = require.main.require('./src/notifications'),
 
 	async = require.main.require('async'),
 	nconf = require.main.require('nconf'),
+	winston = require.main.require('winston'),
 
 	plugin = {};
 
@@ -49,12 +51,27 @@ plugin.onRegister = function(data, callback) {
 					user: data.userData,
 					url: nconf.get('url')
 				}, next);
-			});
+			}, onError);
 		} else {
 			// No match, send notification
-			console.log('DERP');
+			notifications.create({
+				bodyShort: 'A user by the name of ' + data.userData.username + ' has registered',
+				bodyLong: '',
+				image: data.userData.picture,
+				nid: 'plugin:registration-notification:' + data.uid,
+				path: 'users/' + data.userData.userslug
+			}, function(err, notification) {
+				notifications.push(notification, data.adminUids, onError);
+			});
 		}
 	});
+
+	var onError = function(err) {
+		if (err) {
+			winston.error('[plugin/registration-notification] Encountered an error while notifying admins.');
+			console.log(err.stack);
+		}
+	};
 
 	callback(null, data);
 };
