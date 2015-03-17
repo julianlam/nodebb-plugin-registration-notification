@@ -42,26 +42,27 @@ plugin.onRegister = function(data, callback) {
 		method: async.apply(meta.settings.getOne, 'registration-notification', 'method'),
 		adminUids: async.apply(groups.getMembers, 'administrators', 0, -1),
 		userData: async.apply(user.getUserFields, data.uid, ['username', 'email', 'picture', 'userslug'])
-	}, function(err, data) {
-		if (data.method === 'email') {
-			async.eachSeries(data.adminUids, function(uid, next) {
+	}, function(err, metadata) {
+		if (metadata.method === 'email') {
+			async.eachSeries(metadata.adminUids, function(uid, next) {
 				emailer.send('new-registration', uid, {
 					site_title: (meta.config.title || 'NodeBB'),
 					subject: 'New User Registration',
-					user: data.userData,
+					user: metadata.userData,
+					fromUid: data.uid,
 					url: nconf.get('url')
 				}, next);
 			}, onError);
 		} else {
 			// No match, send notification
 			notifications.create({
-				bodyShort: 'A user by the name of ' + data.userData.username + ' has registered',
+				bodyShort: 'A user by the name of ' + metadata.userData.username + ' has registered',
 				bodyLong: '',
-				image: data.userData.picture,
+				image: metadata.userData.picture,
 				nid: 'plugin:registration-notification:' + data.uid,
-				path: 'users/' + data.userData.userslug
+				path: 'users/' + metadata.userData.userslug
 			}, function(err, notification) {
-				notifications.push(notification, data.adminUids, onError);
+				notifications.push(notification, metadata.adminUids, onError);
 			});
 		}
 	});

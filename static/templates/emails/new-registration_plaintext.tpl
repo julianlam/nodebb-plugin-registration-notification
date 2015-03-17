@@ -2,6 +2,9 @@
 
 {user.name} has just registered on {site_title}!
 
+For your reference, their email address is "{user.email}"
+
+
 Thanks,
 {site_title}
 
