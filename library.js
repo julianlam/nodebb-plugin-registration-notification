@@ -44,10 +44,12 @@ plugin.onRegister = function(data, callback) {
 		userData: async.apply(user.getUserFields, data.uid, ['username', 'email', 'picture', 'userslug'])
 	}, function(err, metadata) {
 		if (metadata.method === 'email') {
+			var site_title = meta.config.title !== undefined ? meta.config.title : 'NodeBB';
+
 			async.eachSeries(metadata.adminUids, function(uid, next) {
 				emailer.send('new-registration', uid, {
-					site_title: (meta.config.title || 'NodeBB'),
-					subject: 'New User Registration',
+					site_title: site_title,
+					subject: '[' + site_title + '] New User Registration',
 					user: metadata.userData,
 					fromUid: data.uid,
 					url: nconf.get('url')
