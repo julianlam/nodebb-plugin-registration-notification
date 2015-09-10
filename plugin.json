@@ -5,7 +5,7 @@
 	"hooks": [
 		{ "hook": "static:app.load", "method": "init" },
 		{ "hook": "filter:admin.header.build", "method": "addAdminNavigation" },
-		{ "hook": "filter:register.complete", "method": "onRegister" }
+		{ "hook": "action:user.create", "method": "onRegister" }
 	],
 	"staticDirs": {
 		"static": "./static"

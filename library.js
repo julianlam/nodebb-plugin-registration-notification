@@ -37,11 +37,10 @@ plugin.addAdminNavigation = function(header, callback) {
 	callback(null, header);
 };
 
-plugin.onRegister = function(data, callback) {
+plugin.onRegister = function(data) {
 	async.parallel({
 		method: async.apply(meta.settings.getOne, 'registration-notification', 'method'),
-		adminUids: async.apply(groups.getMembers, 'administrators', 0, -1),
-		userData: async.apply(user.getUserFields, data.uid, ['username', 'email', 'picture', 'userslug'])
+		adminUids: async.apply(groups.getMembers, 'administrators', 0, -1)
 	}, function(err, metadata) {
 		if (metadata.method === 'email') {
 			var site_title = meta.config.title !== undefined ? meta.config.title : 'NodeBB';
@@ -50,7 +49,7 @@ plugin.onRegister = function(data, callback) {
 				emailer.send('new-registration', uid, {
 					site_title: site_title,
 					subject: '[' + site_title + '] New User Registration',
-					user: metadata.userData,
+					user: data,
 					fromUid: data.uid,
 					url: nconf.get('url')
 				}, next);
@@ -58,11 +57,11 @@ plugin.onRegister = function(data, callback) {
 		} else {
 			// No match, send notification
 			notifications.create({
-				bodyShort: 'A user by the name of ' + metadata.userData.username + ' has registered',
+				bodyShort: 'A user by the name of ' + data.username + ' has registered',
 				bodyLong: '',
-				image: metadata.userData.picture,
+				image: data.picture,
 				nid: 'plugin:registration-notification:' + data.uid,
-				path: 'users/' + metadata.userData.userslug
+				path: '/user/' + data.userslug
 			}, function(err, notification) {
 				notifications.push(notification, metadata.adminUids, onError);
 			});
@@ -75,8 +74,6 @@ plugin.onRegister = function(data, callback) {
 			console.log(err.stack);
 		}
 	};
-
-	callback(null, data);
 };
 
 module.exports = plugin;
