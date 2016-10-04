@@ -8,13 +8,8 @@
 						<label for="method">How do you wish to be notified of a new registration?</label>
 						<select id="method" name="method" class="form-control">
 							<option value="notification">Notification</option>
-							<option value="email"<!-- IF !hasEmailer --> disabled<!-- ENDIF !hasEmailer -->>Email</option>
+							<option value="email">Email</option>
 						</select>
-						<!-- IF !hasEmailer -->
-						<p class="help-block">
-							The "Email" option is disabled as it requires an emailer to be installed and activated.
-						</p>
-						<!-- ENDIF !hasEmailer -->
 					</div>
 				</form>
 			</div>
