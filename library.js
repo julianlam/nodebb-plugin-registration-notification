@@ -6,6 +6,7 @@ var controllers = require('./lib/controllers'),
 	emailer = require.main.require('./src/emailer'),
 	meta = require.main.require('./src/meta'),
 	notifications = require.main.require('./src/notifications'),
+	utils = require.main.require('./public/src/utils'),
 
 	async = require.main.require('async'),
 	nconf = require.main.require('nconf'),
@@ -38,6 +39,24 @@ plugin.addAdminNavigation = function(header, callback) {
 };
 
 plugin.onRegister = function(data) {
+	var allowed = ['normal', 'invite-only', 'admin-invite-only'];
+	if (allowed.indexOf(meta.config.registrationType) !== -1) {
+		sendNotification(data);
+	}
+};
+
+plugin.onQueued = function(data, callback) {
+	var allowed = ['admin-approval', 'admin-approval-ip'];
+	if (allowed.indexOf(meta.config.registrationType) !== -1) {
+		var payload = data.data;
+		payload.userslug = utils.slugify(payload.username);
+		payload.picture = 'brand:logo';
+		sendNotification(payload);
+		callback(null, data);
+	}
+};
+
+function sendNotification(data) {
 	async.parallel({
 		method: async.apply(meta.settings.getOne, 'registration-notification', 'method'),
 		adminUids: async.apply(groups.getMembers, 'administrators', 0, -1)
@@ -50,7 +69,6 @@ plugin.onRegister = function(data) {
 					site_title: site_title,
 					subject: '[' + site_title + '] New User Registration',
 					user: data,
-					fromUid: data.uid,
 					url: nconf.get('url')
 				}, next);
 			}, onError);
@@ -60,7 +78,7 @@ plugin.onRegister = function(data) {
 				bodyShort: 'A user by the name of ' + data.username + ' has registered',
 				bodyLong: '',
 				image: data.picture,
-				nid: 'plugin:registration-notification:' + data.uid,
+				nid: 'plugin:registration-notification:' + Date.now(),
 				path: '/user/' + data.userslug
 			}, function(err, notification) {
 				notifications.push(notification, metadata.adminUids, onError);
