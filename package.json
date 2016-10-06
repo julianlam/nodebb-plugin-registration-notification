@@ -1,6 +1,6 @@
 {
   "name": "nodebb-plugin-registration-notification",
-  "version": "1.0.6",
+  "version": "1.1.0",
   "description": "Automatically notifies administrators when a new user has registered on their forum",
   "main": "library.js",
   "repository": {
