@@ -68,18 +68,18 @@ function sendNotification(data) {
 				emailer.send('new-registration', uid, {
 					site_title: site_title,
 					subject: '[' + site_title + '] New User Registration',
-					user: data,
+					user: data.user,
 					url: nconf.get('url')
 				}, next);
 			}, onError);
 		} else {
 			// No match, send notification
 			notifications.create({
-				bodyShort: 'A user by the name of ' + data.username + ' has registered',
+				bodyShort: 'A user by the name of ' + data.user.username + ' has registered',
 				bodyLong: '',
-				image: data.picture,
+				image: data.user.picture,
 				nid: 'plugin:registration-notification:' + Date.now(),
-				path: '/user/' + data.userslug
+				path: '/user/' + data.user.userslug
 			}, function(err, notification) {
 				notifications.push(notification, metadata.adminUids, onError);
 			});
