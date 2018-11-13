@@ -1,7 +1,7 @@
 <p>[[email:greeting_no_name]],</p>
 
 <p>
-	<a href="{url}/user/{user.userslug}"><img style="vertical-align: middle; width: 24px; height: 24px; padding-right: 1em;" src="{user.picture}" title="{user.username}" /></a>
+	<!-- IF user.picture --><a href="{url}/user/{user.userslug}"><img style="vertical-align: middle; width: 24px; height: 24px; padding-right: 1em;" src="{user.picture}" title="{user.username}" /></a><!-- END -->
 	<a href="{url}/user/{user.userslug}">{user.username}</a> has just registered on <strong>{site_title}</strong>!
 </p>
 <p>
