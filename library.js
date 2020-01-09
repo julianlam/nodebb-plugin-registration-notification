@@ -47,14 +47,14 @@ plugin.onRegister = function(data) {
 
 plugin.onQueued = function(data, callback) {
 	var allowed = ['admin-approval', 'admin-approval-ip'];
-	if (allowed.indexOf(meta.config.registrationType) !== -1) {
+	if (allowed.includes(meta.config.registrationApprovalType)) {
 		var payload = data.userData;
 		payload.userslug = utils.slugify(payload.username);
 		sendNotification({
 			user: payload,
 		});
-		callback(null, data);
-	}
+	} 
+	callback(null, data);
 };
 
 function sendNotification(data) {
