@@ -1,18 +1,18 @@
 "use strict";
 
-var controllers = require('./lib/controllers'),
-	user = require.main.require('./src/user'),
-	groups = require.main.require('./src/groups'),
-	emailer = require.main.require('./src/emailer'),
-	meta = require.main.require('./src/meta'),
-	notifications = require.main.require('./src/notifications'),
-	utils = require.main.require('./public/src/utils'),
+const controllers = require('./lib/controllers');
+const user = require.main.require('./src/user');
+const groups = require.main.require('./src/groups');
+const emailer = require.main.require('./src/emailer');
+const meta = require.main.require('./src/meta');
+const notifications = require.main.require('./src/notifications');
+const slugify = require.main.require('./src/slugify');
+    
+const async = require.main.require('async');
+const nconf = require.main.require('nconf');
+const winston = require.main.require('winston');
 
-	async = require.main.require('async'),
-	nconf = require.main.require('nconf'),
-	winston = require.main.require('winston'),
-
-	plugin = {};
+const plugin = module.exports;
 
 plugin.init = function(params, callback) {
 	var router = params.router,
@@ -49,7 +49,7 @@ plugin.onQueued = function(data, callback) {
 	var allowed = ['admin-approval', 'admin-approval-ip'];
 	if (allowed.includes(meta.config.registrationApprovalType)) {
 		var payload = data.userData;
-		payload.userslug = utils.slugify(payload.username);
+		payload.userslug = slugify(payload.username);
 		sendNotification({
 			user: payload,
 		});
@@ -94,5 +94,3 @@ function sendNotification(data) {
 		}
 	};
 };
-
-module.exports = plugin;
