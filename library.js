@@ -7,7 +7,7 @@ const emailer = require.main.require('./src/emailer');
 const meta = require.main.require('./src/meta');
 const notifications = require.main.require('./src/notifications');
 const slugify = require.main.require('./src/slugify');
-    
+
 const async = require.main.require('async');
 const nconf = require.main.require('nconf');
 const winston = require.main.require('winston');
@@ -18,7 +18,7 @@ plugin.init = function(params, callback) {
 	var router = params.router,
 		hostMiddleware = params.middleware,
 		hostControllers = params.controllers;
-		
+
 	// We create two routes for every view. One API call, and the actual route itself.
 	// Just add the buildHeader middleware to your route and NodeBB will take care of everything for you.
 
@@ -29,6 +29,9 @@ plugin.init = function(params, callback) {
 };
 
 plugin.addAdminNavigation = function(header, callback) {
+	(async () => {
+		console.log(await meta.settings.get('registration-notification'));
+	})();
 	header.plugins.push({
 		route: '/plugins/registration-notification',
 		icon: 'fa-tint',
@@ -53,39 +56,53 @@ plugin.onQueued = function(data, callback) {
 		sendNotification({
 			user: payload,
 		});
-	} 
+	}
 	callback(null, data);
 };
 
-function sendNotification(data) {
-	async.parallel({
-		method: async.apply(meta.settings.getOne, 'registration-notification', 'method'),
-		adminUids: async.apply(groups.getMembers, 'administrators', 0, -1)
-	}, function(err, metadata) {
-		if (metadata.method === 'email') {
-			var site_title = meta.config.title !== undefined ? meta.config.title : 'NodeBB';
+async function sendNotification(data) {
+	let method = await meta.settings.getOne('registration-notification', 'method');
+	const adminUids = await groups.getMembers('administrators', 0, -1);
 
-			async.eachSeries(metadata.adminUids, function(uid, next) {
-				emailer.send('new-registration', uid, {
+	try {
+		method = JSON.parse(method);
+	} catch (e) {
+		method = [];
+	}
+
+	if (method.includes('email')) {
+		var site_title = meta.config.title !== undefined ? meta.config.title : 'NodeBB';
+
+		try {
+			await Promise.all(adminUids.map(async (uid) => {
+				await emailer.send('new-registration', uid, {
 					site_title: site_title,
 					subject: '[' + site_title + '] New User Registration',
 					user: data.user,
 					url: nconf.get('url')
-				}, next);
-			}, onError);
-		} else {
-			// No match, send notification
-			notifications.create({
-				bodyShort: 'A user by the name of ' + data.user.username + ' has registered',
-				bodyLong: '',
-				image: data.user.picture,
-				nid: 'plugin:registration-notification:' + Date.now(),
-				path: '/user/' + data.user.userslug
-			}, function(err, notification) {
-				notifications.push(notification, metadata.adminUids, onError);
-			});
+				});
+			}));
+		} catch (e) {
+			onError(e);
 		}
-	});
+	}
+
+	if (method.includes('notification')) {
+		// No match, send notification
+		const notification = await notifications.create({
+			bodyShort: 'A user by the name of ' + data.user.username + ' has registered',
+			bodyLong: '',
+			image: data.user.picture,
+			nid: 'plugin:registration-notification:' + Date.now(),
+			path: '/user/' + data.user.userslug
+		});
+
+		try {
+			await notifications.push(notification, adminUids);
+		} catch (e) {
+			onError(e);
+		}
+	}
 
 	var onError = function(err) {
 		if (err) {

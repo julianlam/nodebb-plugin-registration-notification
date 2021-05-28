@@ -3,10 +3,10 @@
 		<div class="panel panel-default">
 			<div class="panel-heading">Registration Notification</div>
 			<div class="panel-body">
-				<form role="form" class="registration-notification-settings">
-					<div class="form-group">
+				<form role="form" class="registration-notification-settings row">
+					<div class="form-group col-sm-6">
 						<label for="method">How do you wish to be notified of a new registration?</label>
-						<select id="method" name="method" class="form-control">
+						<select id="method" name="method" class="form-control" multiple="multiple">
 							<option value="notification">Notification</option>
 							<option value="email">Email</option>
 						</select>
