@@ -29,9 +29,6 @@ plugin.init = function(params, callback) {
 };
 
 plugin.addAdminNavigation = function(header, callback) {
-	(async () => {
-		console.log(await meta.settings.get('registration-notification'));
-	})();
 	header.plugins.push({
 		route: '/plugins/registration-notification',
 		icon: 'fa-tint',
