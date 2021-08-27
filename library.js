@@ -62,7 +62,7 @@ async function sendNotification(data) {
 	const adminUids = await groups.getMembers('administrators', 0, -1);
 
 	try {
-		method = JSON.parse(method);
+		method = JSON.parse(method) || [];
 	} catch (e) {
 		method = [];
 	}
