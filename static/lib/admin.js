@@ -1,22 +1,17 @@
 'use strict';
-/* globals define, $, app, socket, require */
 
-define('admin/plugins/registration-notification', ['settings'], function(Settings) {
+define('admin/plugins/registration-notification', ['settings', 'alerts'], function (Settings, alerts) {
 	var ACP = {};
 
-	ACP.init = function() {
+	ACP.init = function () {
 		Settings.load('registration-notification', $('.registration-notification-settings'));
 
-		$('#save').on('click', function() {
-			Settings.save('registration-notification', $('.registration-notification-settings'), function() {
-				app.alert({
+		$('#save').on('click', function () {
+			Settings.save('registration-notification', $('.registration-notification-settings'), function () {
+				alerts.alert({
 					type: 'success',
 					alert_id: 'registration-notification-saved',
-					title: 'Settings Saved'/*,
-					message: 'Please reload your NodeBB to apply these settings',
-					clickfn: function() {
-						socket.emit('admin.reload');
-					}*/
+					title: 'Settings Saved',
 				});
 			});
 		});

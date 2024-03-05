@@ -1,54 +1,44 @@
-"use strict";
+'use strict';
 
 const controllers = require('./lib/controllers');
-const user = require.main.require('./src/user');
+
 const groups = require.main.require('./src/groups');
 const emailer = require.main.require('./src/emailer');
 const meta = require.main.require('./src/meta');
 const notifications = require.main.require('./src/notifications');
 const slugify = require.main.require('./src/slugify');
 
-const async = require.main.require('async');
 const nconf = require.main.require('nconf');
 const winston = require.main.require('winston');
 
 const plugin = module.exports;
 
-plugin.init = function(params, callback) {
-	var router = params.router,
-		hostMiddleware = params.middleware,
-		hostControllers = params.controllers;
-
-	// We create two routes for every view. One API call, and the actual route itself.
-	// Just add the buildHeader middleware to your route and NodeBB will take care of everything for you.
-
-	router.get('/admin/plugins/registration-notification', hostMiddleware.admin.buildHeader, controllers.renderAdminPage);
-	router.get('/api/admin/plugins/registration-notification', controllers.renderAdminPage);
-
-	callback();
+plugin.init = async function (params) {
+	const { router } = params;
+	const routeHelpers = require.main.require('./src/routes/helpers');
+	routeHelpers.setupAdminPageRoute(router, '/admin/plugins/registration-notification', controllers.renderAdminPage);
 };
 
-plugin.addAdminNavigation = function(header, callback) {
+plugin.addAdminNavigation = function (header) {
 	header.plugins.push({
 		route: '/plugins/registration-notification',
 		icon: 'fa-tint',
-		name: 'Registration Notification'
+		name: 'Registration Notification',
 	});
-
-	callback(null, header);
+	return header;
 };
 
-plugin.onRegister = function(data) {
-	var allowed = ['normal', 'invite-only', 'admin-invite-only'];
-	if (allowed.indexOf(meta.config.registrationType) !== -1) {
+plugin.onRegister = function (data) {
+	const allowed = ['normal', 'invite-only', 'admin-invite-only'];
+	if (allowed.includes(meta.config.registrationType)) {
 		sendNotification(data);
 	}
 };
 
-plugin.onQueued = function(data, callback) {
-	var allowed = ['admin-approval', 'admin-approval-ip'];
+plugin.onQueued = function (data, callback) {
+	const allowed = ['admin-approval', 'admin-approval-ip'];
 	if (allowed.includes(meta.config.registrationApprovalType)) {
-		var payload = data.userData;
+		const payload = data.userData;
 		payload.userslug = slugify(payload.username);
 		sendNotification({
 			user: payload,
@@ -56,6 +46,13 @@ plugin.onQueued = function(data, callback) {
 	}
 	callback(null, data);
 };
+
+function onError(err) {
+	if (err) {
+		winston.error('[plugin/registration-notification] Encountered an error while notifying admins.');
+		console.log(err.stack);
+	}
+}
 
 async function sendNotification(data) {
 	let method = await meta.settings.getOne('registration-notification', 'method');
@@ -68,30 +65,30 @@ async function sendNotification(data) {
 	}
 
 	if (method.includes('email')) {
-		var site_title = meta.config.title !== undefined ? meta.config.title : 'NodeBB';
+		const site_title = meta.config.title || 'NodeBB';
 
 		try {
 			await Promise.all(adminUids.map(async (uid) => {
 				await emailer.send('new-registration', uid, {
 					site_title: site_title,
-					subject: '[' + site_title + '] New User Registration',
+					subject: `[${site_title}] New User Registration`,
 					user: data.user,
-					url: nconf.get('url')
+					url: nconf.get('url'),
 				});
 			}));
-		} catch (e) {
-			onError(e);
+		} catch (err) {
+			onError(err);
 		}
 	}
 
 	if (method.includes('notification')) {
 		// No match, send notification
 		const notification = await notifications.create({
-			bodyShort: 'A user by the name of ' + data.user.username + ' has registered',
+			bodyShort: `A user by the name of ${data.user.username} has registered`,
 			bodyLong: '',
 			image: data.user.picture,
-			nid: 'plugin:registration-notification:' + Date.now(),
-			path: '/user/' + data.user.userslug
+			nid: `plugin:registration-notification:${Date.now()}`,
+			path: `/user/${data.user.userslug}`,
 		});
 
 		try {
@@ -100,11 +97,4 @@ async function sendNotification(data) {
 			onError(e);
 		}
 	}
-
-	var onError = function(err) {
-		if (err) {
-			winston.error('[plugin/registration-notification] Encountered an error while notifying admins.');
-			console.log(err.stack);
-		}
-	};
-};
+}

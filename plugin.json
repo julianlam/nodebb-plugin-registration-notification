@@ -8,14 +8,8 @@
 		{ "hook": "action:user.create", "method": "onRegister" },
 		{ "hook": "filter:user.addToApprovalQueue", "method": "onQueued" }
 	],
-	"staticDirs": {
-		"static": "./static"
+	"modules": {
+		"../admin/plugins/registration-notification.js": "static/lib/admin.js"
 	},
-	"less": [
-		"static/style.less"
-	],
-	"acpScripts": [
-		"static/lib/admin.js"
-	],
-	"templates": "static/templates"
+	"templates": "templates"
 }
