@@ -28,9 +28,10 @@ plugin.addAdminNavigation = function (header) {
 	return header;
 };
 
-plugin.onRegister = function (data) {
-	const allowed = ['normal', 'invite-only', 'admin-invite-only'];
-	if (allowed.includes(meta.config.registrationType)) {
+plugin.onRegister = async function (data) {
+	const allowed = (await meta.settings.getOne('registration-notification', 'registerType')) ||
+		['normal', 'invite-only', 'admin-invite-only'];
+	if (allowed.includes(meta.config.registrationType) || allowed.includes('all')) {
 		sendNotification(data);
 	}
 };
